@@ -520,7 +520,7 @@ addTeleportButton("Teleport predio 1", CFrame.new(-1595.23328, 204.074341, 555.8
 addTeleportButton("Teleport Devs Mini City", CFrame.new(2555.44263, 303.167755, -1004.13763, -0.422592998, 0, 0.906319618, 0, 1, 0, -0.906319618, 0, -0.422592998))
 
 local rev = Window:CreateTab("Revistar")
-local Paragraph = rev:CreateParagraph({Title = "MINI AWAYS", Content = "feito por amir & ninja"})
+local Paragraph = rev:CreateParagraph({Title = "gab menu", Content = "feito por gab"})
 local Section = rev:CreateSection("SE QUISER SIM")
 local Button = rev:CreateButton({
    Name = "AUTO ROUBAR",
@@ -586,4 +586,5 @@ local mob = rev:CreateButton({
 -- FunÃƒÂ§ÃƒÂ£o para enviar a mensagem /revistar
 local function sendRevistarMessage()
     local channel = TextChatService:WaitForChild("TextChannels"):WaitForChild("RBXGeneral")
-    channel:SendAsync("/rev
+    channel:SendAsync("/revistar")
+end
