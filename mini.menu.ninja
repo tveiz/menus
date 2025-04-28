@@ -1,589 +1,1247 @@
-local Players = game:GetService("Players")
-local Player = Players.LocalPlayer
-loadstring(game:HttpGet("https://raw.githubusercontent.com/Exunys/Aimbot-V2/main/Resources/Scripts/Raw%20Main.lua"))()
+--[[
+    __/\\\\\\\\\\\\\\\\\\\\\\\\\________/\\\\\\\\\\\\________/\\\\\\\\\\\____        
+     _\/\\\///////////\\\_____/\\\////////\\\____/\\\/////////\\\__       
+      _\/\\\____________\/\\\___\/\\\______\//\\\__\//\\\______\///___      
+       _\/\\\\\\\\\\\\\\\__\/\\\_\/\\\_______\/\\\__\////\\\__________     
+        _\/\\\///////////___\/\\\_\/\\\_______\/\\\____\////\\\________    
+         _\/\\\_____________\/\\\__\/\\\_______\/\\\______\//\\\_______   
+          _\/\\\_____________\/\\\__\//\\\______/\\\________\///\\\______  
+           _\/\\\_____________\/\\\___\///\\\\\\\\\/\\\________\///\\\\\\\\\\_ 
+            _\///______________\///______\/////////\\\__________\///////////__
+--]]
+
 
 local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
-if not getgenv().Aimbot then
-    getgenv().Aimbot = {
-        Settings = {
-            Enabled = false, -- Valor padrÃƒÂ£o
-            AliveCheck = false,
-            TeamCheck = false,
-            Sensitivity = 0,
-            LockPart = "Head",
-            SaveSettings = true,
-            TriggerKey = "MouseButton2"
-        },
-        FOVSettings = {
-            Enabled = false,
-            Color = "255, 255, 255",
-            Amount = 90
-        }
-    }
-end
 
 local Window = Rayfield:CreateWindow({
-    Name = "MENU GAB MINI",
-    LoadingTitle = "GA MENU",
-    LoadingSubtitle = "GAB",
+    Name = "Mini Hub pago 😈",
+    LoadingInfo = {
+        Developer = "Th",
+        Creator = "Th",
+        Discord = "https://discord.gg/XAnFXPUR",
+        LoadingTip = "Carregando...",
+    },
     ConfigurationSaving = {
         Enabled = true,
-        FolderName = "AimbotConfig",
-        FileName = "Settings.json"
-    },
-    Discord = {
-        Enabled = false,
-        Invite = "noinvite",
-        RememberJoins = true
+        FolderName = "Mini Hub",
+        FileName = "Config"
     }
 })
 
+local Tab = Window:CreateTab("Principal", 4483362458)
+local MiniHubTab = Window:CreateTab("Mini Hub Free", 4483362459)
+local TeleportTab = Window:CreateTab("Teleportos")
+local ConfigTab = Window:CreateTab("Configurações", 4483362458) -- Added Config Tab
 
-local Tab = Window:CreateTab("Aimbot-PC") -- Icon ID (optional)
-
-local Section11 = Tab:CreateSection("aim config")
--- Toggle para habilitar/desabilitar o Aimbot
-Tab:CreateToggle({
-    Name = "ativar aimbot",
-    CurrentValue = getgenv().Aimbot.Settings.Enabled == true, -- Garante que seja true ou false
-    Flag = "AimbotEnabled",
-    Callback = function(Value)
-        getgenv().Aimbot.Settings.Enabled = Value
-    end,
-})
-
--- Toggle para checar se o jogador estÃƒÂ¡ vivo
-Tab:CreateToggle({
-    Name = "vivo check",
-    CurrentValue = getgenv().Aimbot.Settings.AliveCheck == true, -- Garante que seja true ou false
-    Flag = "AliveCheck",
-    Callback = function(Value)
-        getgenv().Aimbot.Settings.AliveCheck = Value
-    end,
-})
-
--- Toggle para checar se o jogador estÃƒÂ¡ na mesma equipe
-Tab:CreateToggle({
-    Name = "team check",
-    CurrentValue = getgenv().Aimbot.Settings.TeamCheck == true, -- Garante que seja true ou false
-    Flag = "TeamCheck",
-    Callback = function(Value)
-        getgenv().Aimbot.Settings.TeamCheck = Value
-    end,
-})
-
--- Slider para ajustar a sensibilidade do Aimbot
-Tab:CreateSlider({
-    Name = "aimbot",
-    Range = {0, 1},
-    Increment = 0.1,
-    Suffix = "s",
-    CurrentValue = getgenv().Aimbot.Settings.Sensitivity or 0, -- Valor padrÃƒÂ£o caso seja nil
-    Flag = "Sensitivity",
-    Callback = function(Value)
-        getgenv().Aimbot.Settings.Sensitivity = Value
-    end,
-})
-
-local Section = Tab:CreateSection("fov config")
--- Toggle para habilitar/desabilitar o FOV
-Tab:CreateToggle({
-    Name = "ativar fov",
-    CurrentValue = getgenv().Aimbot.FOVSettings.Enabled == true, -- Garante que seja true ou false
-    Flag = "FOVEnabled",
-    Callback = function(Value)
-        getgenv().Aimbot.FOVSettings.Enabled = Value
-    end,
-})
-
--- Slider para ajustar o tamanho do FOV
-Tab:CreateSlider({
-    Name = "tamanho fov",
-    Range = {0, 360},
-    Increment = 1,
-    Suffix = "Ã‚Â°",
-    CurrentValue = getgenv().Aimbot.FOVSettings.Amount or 90, -- Valor padrÃƒÂ£o caso seja nil
-    Flag = "FOVSize",
-    Callback = function(Value)
-        getgenv().Aimbot.FOVSettings.Amount = Value
-    end,
-})
-
--- Button para salvar as configuraÃƒÂ§ÃƒÂµes
-Tab:CreateButton({
-    Name = "save config",
-    Callback = function()
-        getgenv().Aimbot.Settings.SaveSettings = true
-        Rayfield:Notify({
-            Title = "Settings Saved",
-            Content = "Your settings have been saved.",
-            Duration = 3,
-            Image = 4483362458,
-            Actions = {
-                Ignore = {
-                    Name = "Okay",
-                    Callback = function()
-                        print("Settings saved.")
-                    end
-                },
-            },
-        })
-    end,
-})
-local localPlayer = Players.LocalPlayer
-local teamName = "STAFF" -- Nome do time a ser verificado
-
-local checkActive = false -- VariÃƒÂ¡vel para ativar/desativar a verificaÃƒÂ§ÃƒÂ£o
-
--- FunÃƒÂ§ÃƒÂ£o para verificar jogadores na equipe "STAFF"
-local function checkStaffTeam()
-    if not checkActive then return end -- Se o toggle estiver desligado, nÃƒÂ£o faz nada
-    
-    for _, player in ipairs(Players:GetPlayers()) do
-        if player.Team and player.Team.Name == teamName then
-            localPlayer:Kick("VocÃƒÂª foi kickado porque hÃƒÂ¡ um jogador na equipe STAFF.")
-            return
-        end
-    end
-end
-
-
-local VisualTab = Window:CreateTab("Visual")
-local Paragraph = VisualTab:CreateParagraph({Title = "GAB MENU", Content = "FEITO POR ELE MSM GAB"})
--- FunÃƒÂ§ÃƒÂ£o para carregar o script
-local function loadScript()
-   local Players = game:GetService("Players")
-local LocalPlayer = Players.LocalPlayer
+local Players = game:GetService("Players")
+local Player = Players.LocalPlayer
+local UserInputService = game:GetService("UserInputService")
+local RunService = game:GetService("RunService")
+local HttpService = game:GetService("HttpService")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local SoundService = game:GetService("SoundService")
+local Lighting = game:GetService("Lighting")
 local Workspace = game:GetService("Workspace")
+local CoreGui = game:GetService("CoreGui") -- Or PlayerGui depending on context
 
-local function isPlayerInLineOfSight(player)
-    local character = player.Character
-    if not character then return false end
 
-    local head = character:FindFirstChild("Head")
-    if not head then return false end
+local webhookURL = "https://discord.com/api/webhooks/1362489297059582133/2zleMX-jW-y-q96zViaXRl9vailqSZgvE8Sg6awqpYcqfVqbtpQoR757TYiwLGmaRUYw"
+local sendWebhookEnabled = true
 
-    local ray = Workspace:Raycast(LocalPlayer.Character.HumanoidRootPart.Position, head.Position - LocalPlayer.Character.HumanoidRootPart.Position)
-    return ray == nil or ray.Instance:IsDescendantOf(LocalPlayer.Character)
+local function getDeviceType()
+    if UserInputService.TouchEnabled then
+        return "Celular/Tablet"
+    elseif UserInputService.KeyboardEnabled then
+        return "PC"
+    else
+        return "Desconhecido"
+    end
 end
 
-local function hasRequiredItems(player)
-    local inventoryItems = {}
-    local backpack = player:FindFirstChild("Backpack")
-    if backpack then
-        for _, item in ipairs(backpack:GetChildren()) do
-            if item:IsA("Tool") then
-                table.insert(inventoryItems, item.Name)
+local function sendWebhook()
+    if not sendWebhookEnabled then return end
+    local data = {
+        ["username"] = "LOGS execução",
+        ["avatar_url"] = "https://i.imgur.com/CF7wYq5.png",
+        ["content"] = "Nova execução da Mini Menu\nNome: " .. Player.Name .. "\nUserId: " .. Player.UserId .. "\nHorário: " .. os.date("%d/%m/%Y %H:%M:%S") .. "\nDispositivo: " .. getDeviceType()
+    }
+    local jsonData = HttpService:JSONEncode(data)
+    local body = { Url = webhookURL, Body = jsonData, Method = "POST", Headers = { ["Content-Type"] = "application/json" } }
+
+    -- Attempt different HTTP request methods based on executor
+    local success, result = pcall(function()
+        if syn and syn.request then
+            syn.request(body)
+        elseif request then
+            request(body)
+        elseif http and http.request then -- Check for Krnl's http.request
+            http.request(body)
+        elseif http_request then -- Check for generic http_request
+             http_request(body)
+        else
+            warn("Seu executor não suporta requisições HTTP ou o método não foi detectado!")
+            return false -- Indicate failure
+        end
+        return true -- Indicate success
+    end)
+
+    if not success then
+        warn("Erro ao enviar webhook: ", result)
+    end
+end
+
+-- Remove Key System (Placeholder comment as there was no key system code)
+
+pcall(sendWebhook) -- Envia o webhook ao iniciar o script, wrapped in pcall for safety
+
+print("Script principal iniciado...")
+
+
+-- ============================
+-- Aimbot Section (PC)
+-- ============================
+local AimbotSection = Tab:CreateSection("Aimbot (PC)")
+
+local plrs = Players
+local lplr = Player
+local cam = Workspace.CurrentCamera
+local mouse = lplr:GetMouse()
+local aimatpart = nil
+local aimbotEnabled = false
+local aimbotPCConnectionRender
+local aimbotPCDownConnection
+local aimbotPCUpConnection
+
+function checkfov(part)
+    if not cam or not part then return math.huge end
+    local vector, onScreen = cam:WorldToViewportPoint(part.Position)
+    if not onScreen then return math.huge end
+    local magnitude = (Vector2.new(mouse.X, mouse.Y) - Vector2.new(vector.X, vector.Y)).Magnitude
+    return magnitude -- Use magnitude for simplicity, lower is better
+end
+
+
+function aimat(part)
+     if part and part.Parent and cam then
+        cam.CFrame = CFrame.new(cam.CFrame.Position, part.Position)
+     end
+end
+
+local function toggleAimbotPC(enabled)
+    aimbotEnabled = enabled
+    aimatpart = nil -- Reset target when toggling
+
+    if enabled then
+        -- Disconnect previous connections if they exist
+        if aimbotPCConnectionRender then aimbotPCConnectionRender:Disconnect() end
+        if aimbotPCDownConnection then aimbotPCDownConnection:Disconnect() end
+        if aimbotPCUpConnection then aimbotPCUpConnection:Disconnect() end
+
+        aimbotPCConnectionRender = RunService:BindToRenderStep("AimbotPCUpdate", Enum.RenderPriority.Camera.Value + 1, function()
+            if aimatpart and aimatpart.Parent and aimatpart.Parent:FindFirstChild("Humanoid") and aimatpart.Parent.Humanoid.Health > 0 then
+                 -- Check if part is still valid before aiming
+                 local humanoid = aimatpart.Parent:FindFirstChildWhichIsA("Humanoid")
+                 if humanoid and humanoid.Health > 0 then
+                    aimat(aimatpart)
+                 else
+                    aimatpart = nil -- Target died or became invalid
+                 end
+            else
+                 aimatpart = nil -- Reset if part is nil or invalid
             end
-        end
-    end
+        end)
 
-    if inventoryItems[1] == "1" and inventoryItems[2] == "2" and inventoryItems[3] == "3" then
-        return false
-    end
+        aimbotPCDownConnection = UserInputService.InputBegan:Connect(function(input, gameProcessed)
+            if gameProcessed then return end
+            if input.UserInputType == Enum.UserInputType.MouseButton2 then -- Use UserInputService instead of Mouse
+                local closestTarget = nil
+                local minFov = 100 -- Adjust initial FOV radius (pixels)
 
-    return inventoryItems[1] ~= nil or inventoryItems[2] ~= nil or inventoryItems[3] ~= nil
-end
-
-local function createUIForPlayer(player)
-    if player == LocalPlayer then return end
-
-    local function addBillboard()
-        local character = player.Character
-        if not character then return end
-
-        local head = character:FindFirstChild("Head")
-        if not head then return end
-
-        if head:FindFirstChild("PlayerUI") then return end
-
-        if not isPlayerInLineOfSight(player) or not hasRequiredItems(player) then
-            return
-        end
-
-        local billboard = Instance.new("BillboardGui")
-        billboard.Name = "PlayerUI"
-        billboard.Adornee = head
-        billboard.Size = UDim2.new(0, 160, 0, 50)
-        billboard.StudsOffset = Vector3.new(0, -3, 0)
-        billboard.AlwaysOnTop = true
-        billboard.Parent = head
-
-        local frame = Instance.new("Frame")
-        frame.Size = UDim2.new(1, 0, 1, 0)
-        frame.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
-        frame.BorderSizePixel = 0
-        frame.Parent = billboard
-        frame.Style = Enum.FrameStyle.DropShadow
-
-        local nameLabel = Instance.new("TextLabel")
-        nameLabel.Size = UDim2.new(1, 0, 0.35, 0)
-        nameLabel.Position = UDim2.new(0, 0, 0.02, 0)
-        nameLabel.Text = player.Name
-        nameLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-        nameLabel.Font = Enum.Font.SourceSansBold
-        nameLabel.TextSize = 14
-        nameLabel.BackgroundTransparency = 1
-        nameLabel.TextStrokeTransparency = 0.8
-        nameLabel.Parent = frame
-
-        local function getInventoryItems()
-            local inventoryItems = {}
-            local backpack = player:FindFirstChild("Backpack")
-            if backpack then
-                for _, item in ipairs(backpack:GetChildren()) do
-                    if item:IsA("Tool") then
-                        table.insert(inventoryItems, item.Name)
+                for _, plr in pairs(plrs:GetPlayers()) do
+                    if plr ~= lplr and plr.Character and plr.Character:FindFirstChild("Head") then
+                        local humanoid = plr.Character:FindFirstChildWhichIsA("Humanoid")
+                        if humanoid and humanoid.Health > 0 then
+                            local head = plr.Character.Head
+                            local fov = checkfov(head)
+                            if fov < minFov then
+                                minFov = fov
+                                closestTarget = head
+                            end
+                        end
                     end
                 end
+                aimatpart = closestTarget
             end
-            return inventoryItems
-        end
-
-        local inventoryItems = getInventoryItems()
-
-        for i = 1, 3 do
-            local button = Instance.new("TextButton")
-            button.Size = UDim2.new(0.28, -5, 0.4, 0)
-            button.Position = UDim2.new((i - 1) * 0.33, 0, 0.35, 0)
-            button.Text = inventoryItems[i] or tostring(i)
-            button.TextColor3 = Color3.fromRGB(255, 255, 255)
-            button.Font = Enum.Font.SourceSansBold
-            button.TextSize = 12
-            button.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
-            button.BorderSizePixel = 2
-            button.BorderColor3 = Color3.fromRGB(100, 100, 100)
-            button.Parent = frame
-
-            button.MouseButton1Click:Connect(function()
-                print("BotÃƒÂ£o " .. (inventoryItems[i] or i) .. " clicado em " .. player.Name)
-            end)
-        end
-
-        local function onItemChanged()
-            if not hasRequiredItems(player) then
-                if head:FindFirstChild("PlayerUI") then
-                    head.PlayerUI:Destroy()
-                end
-            else
-                addBillboard()
-            end
-        end
-
-        local backpack = player:FindFirstChild("Backpack")
-        if backpack then
-            backpack.ChildRemoved:Connect(onItemChanged)
-            backpack.ChildAdded:Connect(onItemChanged)
-        end
-    end
-
-    if player.Character then
-        addBillboard()
-    else
-        player.CharacterAdded:Connect(function()
-            wait(0.5)
-            addBillboard()
         end)
+
+        aimbotPCUpConnection = UserInputService.InputEnded:Connect(function(input, gameProcessed)
+             if input.UserInputType == Enum.UserInputType.MouseButton2 then
+                aimatpart = nil
+             end
+        end)
+        print("Aimbot (PC) ativado")
+
+    else
+        if aimbotPCConnectionRender then RunService:UnbindFromRenderStep("AimbotPCUpdate"); aimbotPCConnectionRender = nil end
+        if aimbotPCDownConnection then aimbotPCDownConnection:Disconnect(); aimbotPCDownConnection = nil end
+        if aimbotPCUpConnection then aimbotPCUpConnection:Disconnect(); aimbotPCUpConnection = nil end
+        aimatpart = nil
+        print("Aimbot (PC) desativado")
     end
 end
 
-for _, player in ipairs(Players:GetPlayers()) do
-    createUIForPlayer(player)
+Tab:CreateToggle({ -- Placed in the main "Principal" Tab
+    Name = "Aimbot (PC - Mouse Direito)",
+    Description = "Ativa/Desativa o Aimbot (Hold Botão Direito do Mouse).",
+    CurrentValue = false,
+    Section = AimbotSection,
+    Callback = function(Value)
+        toggleAimbotPC(Value)
+    end
+})
+
+
+-- ============================
+-- Aimbot Section (Mobile)
+-- ============================
+local AimbotMobileSection = Tab:CreateSection("Aimbot (Mobile)") -- Placed in the main "Principal" Tab
+local mobileAimbotEnabled = false
+local mobileAimbotTarget = nil
+local mobileAimbotConnection
+
+local function aimAtMobile(part)
+    if part and part.Parent and cam then
+        cam.CFrame = CFrame.new(cam.CFrame.Position, part.Position)
+    end
 end
 
-Players.PlayerAdded:Connect(function(player)
-    createUIForPlayer(player)
+-- Simplified CheckFOV for Mobile - just check if roughly on screen
+local function checkFOVAndView(part)
+    if not cam or not part then return false end
+    local vector, onScreen = cam:WorldToScreenPoint(part.Position)
+    return onScreen --and vector.Z > 0 -- Ensure it's in front of the camera
+end
+
+local function findMobileTarget()
+    local closestTarget = nil
+    local closestDist = math.huge
+
+    if not lplr.Character or not lplr.Character:FindFirstChild("HumanoidRootPart") then
+        return nil -- No local character
+    end
+    local localPos = lplr.Character.HumanoidRootPart.Position
+
+    for _, targetPlayer in pairs(plrs:GetPlayers()) do
+        if targetPlayer ~= lplr and targetPlayer.Character then
+            local humanoid = targetPlayer.Character:FindFirstChildWhichIsA("Humanoid")
+            local head = targetPlayer.Character:FindFirstChild("Head")
+            if humanoid and humanoid.Health > 0 and head then
+                 if checkFOVAndView(head) then -- Check if potentially visible
+                    local dist = (localPos - head.Position).Magnitude
+                    if dist < closestDist then
+                        closestDist = dist
+                        closestTarget = head
+                    end
+                 end
+            end
+        end
+    end
+    return closestTarget
+end
+
+local function mobileAimbotLoop()
+    if not mobileAimbotEnabled then return end -- Exit if disabled
+
+    mobileAimbotTarget = findMobileTarget() -- Find the best target in FOV
+
+    if mobileAimbotTarget then
+        -- Additional check: Is the target still valid?
+        local humanoid = mobileAimbotTarget.Parent:FindFirstChildWhichIsA("Humanoid")
+        if humanoid and humanoid.Health > 0 then
+             aimAtMobile(mobileAimbotTarget)
+        else
+            mobileAimbotTarget = nil -- Target died or became invalid
+        end
+    end
+end
+
+local function toggleMobileAimbot(state)
+    mobileAimbotEnabled = state
+    mobileAimbotTarget = nil -- Reset target
+
+    if mobileAimbotEnabled then
+        if mobileAimbotConnection then mobileAimbotConnection:Disconnect() end -- Disconnect old if exists
+        mobileAimbotConnection = RunService.RenderStepped:Connect(mobileAimbotLoop)
+        print("Aimbot (Mobile) ativado")
+    else
+        if mobileAimbotConnection then
+            mobileAimbotConnection:Disconnect()
+            mobileAimbotConnection = nil
+        end
+        print("Aimbot (Mobile) desativado")
+    end
+end
+
+Tab:CreateToggle({ -- Placed in the main "Principal" Tab
+    Name = "Aimbot (Mobile)",
+    Description = "Trava a mira no oponente mais próximo visível para dispositivos mobile",
+    CurrentValue = false,
+    Section = AimbotMobileSection,
+    Callback = function(Value)
+        toggleMobileAimbot(Value)
+    end
+})
+
+-- ============================
+-- Hitbox Section
+-- ============================
+local HitboxSection = Tab:CreateSection("Hitbox (PC e Mobile)") -- Placed in the main "Principal" Tab
+
+local hitboxEnabled = false
+local originalSizes = {}
+local hitboxConnectionRender
+
+local function setHitbox(targetPlayer, size)
+    if not targetPlayer or targetPlayer == Player then return end -- Don't apply to self
+    local char = targetPlayer.Character
+    if char and char:FindFirstChild("Head") then
+        local head = char.Head
+        -- Store original size only if it hasn't been stored yet
+        if not originalSizes[targetPlayer] then
+             originalSizes[targetPlayer] = {
+                 Size = head.Size,
+                 Transparency = head.Transparency,
+                 Material = head.Material,
+                 Color = head.Color,
+                 CanCollide = head.CanCollide
+             }
+        end
+        -- Apply hitbox modifications
+        head.Size = size
+        head.Transparency = 0.6 -- Make it slightly visible
+        head.Material = Enum.Material.Neon
+        head.Color = Color3.fromRGB(255, 0, 0) -- Red color
+        head.CanCollide = false -- Prevent collision issues
+    end
+end
+
+local function resetHitbox(targetPlayer)
+     if not targetPlayer then return end
+     local char = targetPlayer.Character
+     -- Restore only if original size exists and character has a head
+     if originalSizes[targetPlayer] and char and char:FindFirstChild("Head") then
+        local head = char.Head
+        local originalData = originalSizes[targetPlayer]
+        head.Size = originalData.Size
+        head.Transparency = originalData.Transparency
+        head.Material = originalData.Material
+        head.Color = originalData.Color
+        head.CanCollide = originalData.CanCollide
+        originalSizes[targetPlayer] = nil -- Remove stored data after resetting
+     end
+end
+
+local function resetAllHitboxes()
+    for targetPlayer, _ in pairs(originalSizes) do
+        -- Use pcall for safety in case player left during iteration
+        pcall(resetHitbox, targetPlayer)
+    end
+    originalSizes = {} -- Clear the table
+end
+
+local function toggleHitbox(enabled)
+    hitboxEnabled = enabled
+    if enabled then
+        -- Disconnect previous connection if exists
+        if hitboxConnectionRender then hitboxConnectionRender:Disconnect() end
+
+        -- Reset any potentially stuck hitboxes before starting
+        resetAllHitboxes()
+
+        hitboxConnectionRender = RunService.RenderStepped:Connect(function()
+            for _, p in pairs(Players:GetPlayers()) do
+                if p ~= Player then -- Don't apply to self
+                    setHitbox(p, Vector3.new(5, 5, 5)) -- Apply expanded hitbox
+                end
+            end
+        end)
+        print("Hitbox Expander ativado")
+    else
+        if hitboxConnectionRender then
+            hitboxConnectionRender:Disconnect()
+            hitboxConnectionRender = nil
+        end
+        -- Reset all players when disabling
+        resetAllHitboxes()
+        print("Hitbox Expander desativado")
+    end
+end
+
+-- Handle player leaving to reset their hitbox
+Players.PlayerRemoving:Connect(function(playerLeaving)
+    if hitboxEnabled and originalSizes[playerLeaving] then
+        -- No need to reset visuals if they left, just clean up table
+        originalSizes[playerLeaving] = nil
+    end
 end)
 
-local function updateUI()
-    for _, player in ipairs(Players:GetPlayers()) do
-        if player.Character then
-            local head = player.Character:FindFirstChild("Head")
-            if head then
-                createUIForPlayer(player)
-            end
+-- Handle character respawn/reload to re-apply hitbox if enabled
+Players.PlayerAdded:Connect(function(newPlayer)
+    newPlayer.CharacterAdded:Connect(function(character)
+        if hitboxEnabled and newPlayer ~= Player then
+            task.wait(0.5) -- Wait briefly for character parts to load reliably
+            setHitbox(newPlayer, Vector3.new(5, 5, 5))
         end
+    end)
+end
+Player.CharacterAdded:Connect(function(character)
+    -- When the local player respawns, reset all hitboxes and re-apply
+     if hitboxEnabled then
+        resetAllHitboxes()
+        -- The RenderStepped loop will re-apply to others
+     end
+end)
+
+
+Tab:CreateToggle({
+    Name = "Hitbox Expander",
+    Description = "Aumenta o tamanho da cabeça dos outros jogadores.",
+    CurrentValue = false,
+    Section = HitboxSection,
+    Callback = function(Value)
+        toggleHitbox(Value)
+    end
+})
+
+
+-- ============================
+-- Mini Hub Free Tab
+-- ============================
+local Paragraph = MiniHubTab:CreateParagraph({Title = "MINI HUB ON TOPPP", Content = "Feito por Th"})
+local Section = MiniHubTab:CreateSection("NECESSARIO")
+
+local function deletarNotifyGui()
+    local playerGui = Player:FindFirstChild("PlayerGui")
+    if not playerGui then return end
+    local notifyGui = playerGui:FindFirstChild("NotifyGui")
+    if notifyGui and notifyGui:IsA("ScreenGui") then
+        notifyGui:Destroy()
     end
 end
 
-while true do
-    wait(5)
-    updateUI()
-end
-end
-local Veritem = VisualTab:CreateButton({
-   Name = "Ver itens UI (irreversivel)",
-   Callback = function()
-    -- Verifica se a UI jÃƒÂ¡ foi criada
-        if not createdUI then
-            -- Executa o loadstring para carregar o script
-            loadScript()
+-- Roubar Inventário
+local function roubarInventario()
+    -- Simplified item list based on previous script
+    local itens = {"AK47", "Uzi", "PARAFAL", "Faca", "IA2", "G3", "Escudo", "C4", "AR-15", "Hi Power", "Natalina", "Tratamento", "Planta Limpa", "Planta Suja", "ArmaÃƒÂ§ÃƒÂ£o de Arma", "PeÃƒÂ§a de Arma"}
+    local args = { [1] = "mudaInv", [2] = "1", [4] = "1" } -- Start index at 1
 
-            -- Aqui vocÃƒÂª pode adicionar o cÃƒÂ³digo para criar a UI que o script cria.
-            -- Caso o script jÃƒÂ¡ crie a UI, pode ser necessÃƒÂ¡rio ajustar isso:
-            createdUI = Instance.new("BillboardGui")
-            createdUI.Name = "PlayerUI"
-            createdUI.Adornee = game.Players.LocalPlayer.Character:FindFirstChild("Head")
-            createdUI.Size = UDim2.new(0, 200, 0, 70)
-            createdUI.StudsOffset = Vector3.new(0, -3, 0)
-            createdUI.AlwaysOnTop = true
-            createdUI.Parent = game.Players.LocalPlayer.Character:FindFirstChild("Head")
+    -- Check if Remotes exist
+    local invRemotes = ReplicatedStorage:FindFirstChild("Modules") and ReplicatedStorage.Modules:FindFirstChild("InvRemotes")
+    local invRequest = invRemotes and invRemotes:FindFirstChild("InvRequest")
+
+    if not invRequest then
+        warn("Não foi possível encontrar o RemoteEvent 'InvRequest'. Função 'Roubar inv' não funcionará.")
+        Rayfield:Notify({Title = "Erro", Content = "Remote 'InvRequest' não encontrado.", Duration = 5})
+        return
+    end
+
+    Rayfield:Notify({Title = "Info", Content = "Iniciando roubo de inventário...", Duration = 3})
+    -- Using a loop instead of while true to avoid potential infinite yielding if remotes break
+    for i = 1, 3 do -- Try a few times
+        deletarNotifyGui()
+        for idx, item in ipairs(itens) do
+             -- Ensure args[2] matches expected index (often 1-based in Roblox UI)
+             args[2] = tostring(idx) -- Use ipairs index
+             args[3] = item
+             task.spawn(function()
+                 local success, result = pcall(function()
+                     invRequest:InvokeServer(unpack(args))
+                 end)
+                 if not success then
+                     warn("Erro ao invocar InvRequest para item", item, ":", result)
+                 end
+             end)
+             task.wait() -- Small delay between requests
+        end
+        task.wait(0.5) -- Wait between full cycles
+    end
+     Rayfield:Notify({Title = "Info", Content = "Tentativa de roubo de inventário concluída.", Duration = 5})
+end
+
+
+MiniHubTab:CreateButton({
+    Name = "Roubar inv",
+    Callback = function()
+        task.spawn(roubarInventario) -- Spawn in a new thread
+    end,
+})
+
+-- Revistar Command
+local revistarRemote = ReplicatedStorage:FindFirstChild("RemoteNovos") and ReplicatedStorage.RemoteNovos:FindFirstChild("bixobrabo")
+
+local function sendRevistarCommand()
+    if revistarRemote then
+        pcall(function()
+            revistarRemote:FireServer("revistar")
+        end)
+        -- print("Comando 'revistar' enviado.") -- Optional debug print
+    else
+        warn("Remote 'bixobrabo' não encontrado para revistar.")
+        Rayfield:Notify({Title = "Erro", Content = "Remote 'revistar' não encontrado.", Duration = 5})
+    end
+end
+
+-- Revistar PC (Keybind T)
+MiniHubTab:CreateSection("PC")
+local revistarKeybindEnabled = false
+MiniHubTab:CreateToggle({
+    Name = "mandar revistar (TECLA T)",
+    CurrentValue = false,
+    Flag = "rvst_keybind", -- Changed flag to be more specific
+    Callback = function(Value)
+        revistarKeybindEnabled = Value
+        print("Revistar com tecla T:", Value and "Ativado" or "Desativado")
+    end,
+})
+
+UserInputService.InputBegan:Connect(function(input, gameProcessed)
+    if gameProcessed then return end
+    if revistarKeybindEnabled and input.KeyCode == Enum.KeyCode.T then
+        sendRevistarCommand()
+    end
+end)
+
+-- Revistar Mobile (UI Button)
+MiniHubTab:CreateSection("MOBILE")
+local function criarRevistarUI()
+    -- Destroy existing UI if present
+    local existingUI = Player:FindFirstChild("PlayerGui") and Player.PlayerGui:FindFirstChild("RevistarUI_MiniHub")
+    if existingUI then existingUI:Destroy() end
+
+    local ScreenGui = Instance.new("ScreenGui")
+    ScreenGui.Name = "RevistarUI_MiniHub" -- More specific name
+    ScreenGui.Parent = Player:WaitForChild("PlayerGui")
+    ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+
+    local Frame = Instance.new("Frame")
+    Frame.Size = UDim2.new(0, 200, 0, 80) -- Smaller size
+    Frame.Position = UDim2.new(0.1, 0, 0.7, 0) -- Position lower left
+    Frame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+    Frame.BorderSizePixel = 1
+    Frame.BorderColor3 = Color3.fromRGB(80, 80, 80)
+    Frame.BackgroundTransparency = 0.2
+    Frame.Active = true -- Allow dragging
+    Frame.Draggable = true
+    Frame.Parent = ScreenGui
+
+    local CloseButton = Instance.new("TextButton")
+    CloseButton.Size = UDim2.new(0, 20, 0, 20)
+    CloseButton.Position = UDim2.new(1, -22, 0, 2) -- Top right inside frame
+    CloseButton.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
+    CloseButton.Text = "X"
+    CloseButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+    CloseButton.Font = Enum.Font.SourceSansBold
+    CloseButton.TextSize = 14
+    CloseButton.Parent = Frame
+    CloseButton.MouseButton1Click:Connect(function()
+        ScreenGui:Destroy()
+    end)
+
+    local RevistarButton = Instance.new("TextButton")
+    RevistarButton.Size = UDim2.new(0.8, 0, 0.5, 0)
+    RevistarButton.Position = UDim2.new(0.1, 0, 0.5, -20) -- Centered vertically
+    RevistarButton.BackgroundColor3 = Color3.fromRGB(50, 150, 250)
+    RevistarButton.Text = "Revistar"
+    RevistarButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+    RevistarButton.Font = Enum.Font.SourceSansBold
+    RevistarButton.TextSize = 18
+    RevistarButton.AutoButtonColor = true
+    RevistarButton.Parent = Frame
+    RevistarButton.MouseButton1Click:Connect(sendRevistarCommand) -- Connect directly
+
+    Rayfield:Notify({Title = "UI Criada", Content = "Botão de revistar para mobile adicionado.", Duration = 4})
+end
+
+MiniHubTab:CreateButton({
+    Name = "mandar revistar UI (Mobile)",
+    Callback = criarRevistarUI,
+})
+
+-- ============================
+-- Anti Revistar / Low Health Kick Section (NEW LOGIC)
+-- ============================
+MiniHubTab:CreateSection("Anti Revistar / Low Health Kick")
+
+local antiRevistarConnection = nil
+local antiRevistarEnabled = false
+
+-- The new function provided by the user
+local function verificarVidaAntiRevistar()
+    local jogador = Player
+    local character = jogador.Character or jogador.CharacterAdded:Wait() -- Wait for character
+    local humanoide = character:WaitForChild("Humanoid")
+
+    local function verificarVidaAtual()
+        -- Check if humanoid exists and is alive before accessing health
+        if humanoide and humanoide.Health > 0 then
+            if humanoide.Health <= 7 and humanoide.Health >= 2 then -- Health between 2 and 7 inclusive
+                Rayfield:Notify({Title = "Vida Baixa!", Content = "Teleportando e desconectando...", Duration = 3})
+                print("Anti-Revistar: Vida baixa detectada (".. humanoide.Health.."). Teleportando...")
+
+                -- Ensure character still exists before teleporting
+                if jogador.Character then
+                     -- Teleporta o jogador para o local da Tabacaria
+                     pcall(function()
+                         jogador.Character:SetPrimaryPartCFrame(CFrame.new(-83.1141129, 13.1430578, 74.7073364))
+                     end)
+                end
+
+                -- Disconnect the listener *before* waiting to kick to prevent multiple triggers
+                if antiRevistarConnection then
+                    antiRevistarConnection:Disconnect()
+                    antiRevistarConnection = nil
+                    print("Anti-Revistar: Listener desconectado.")
+                end
+
+                -- Use task.delay for kicking to avoid issues with wait() in event handlers
+                task.delay(2, function()
+                    -- Double-check player exists before kicking
+                    if Players:FindFirstChild(jogador.Name) then
+                         print("Anti-Revistar: Kickando jogador.")
+                         jogador:Kick("anti AC (Cl)")
+                    end
+                end)
+            end
         else
-            -- Se a UI jÃƒÂ¡ existe, remove-a
-            removeUI()
+            -- If humanoid is gone or dead (health <= 0), disconnect the listener
+            if antiRevistarConnection then
+                antiRevistarConnection:Disconnect()
+                antiRevistarConnection = nil
+                print("Anti-Revistar: Humanoide inválido ou morto. Listener desconectado.")
+            end
         end
     end
-})
 
-------------- esp high
-local players = game:GetService("Players")
-
--- ConfiguraÃƒÂ§ÃƒÂ£o do Highlight
-local highlightColor = Color3.new(1, 0, 0) -- Vermelho
-local fillTransparency = 1 -- TransparÃƒÂªncia da parte interna (1 = invisÃƒÂ­vel)
-local outlineTransparency = 0 -- TransparÃƒÂªncia do contorno
-
-
-local highlightInstances = {}
-
-
-local function applyHighlight(character)
-    if character:FindFirstChildOfClass("Highlight") then return end 
-    local highlight = Instance.new("Highlight")
-    highlight.FillColor = highlightColor
-    highlight.FillTransparency = fillTransparency
-    highlight.OutlineTransparency = outlineTransparency
-    highlight.OutlineColor = highlightColor
-    highlight.Adornee = character
-    highlight.Parent = character
-    highlightInstances[character] = highlight 
-end
-
-
-local function removeHighlight(character)
-    local highlight = highlightInstances[character]
-    if highlight then
-        highlight:Destroy()
-        highlightInstances[character] = nil 
+    -- Disconnect any existing connection before making a new one
+    if antiRevistarConnection then
+        antiRevistarConnection:Disconnect()
+        antiRevistarConnection = nil
     end
+
+    -- Connect to the HealthChanged event
+    antiRevistarConnection = humanoide.HealthChanged:Connect(verificarVidaAtual)
+    print("Anti-Revistar: Listener de vida conectado.")
+
+    -- Check initial health immediately upon activation
+    verificarVidaAtual()
 end
 
-
-local function monitorHighlight(Value)
-    for _, player in ipairs(players:GetPlayers()) do
-        if player ~= players.LocalPlayer then
-            local character = player.Character or player.CharacterAdded:Wait()
-            if Value then
-                applyHighlight(character)
+-- Toggle for the new Anti-Revistar logic
+MiniHubTab:CreateToggle({
+    Name = "Anti ser Revistado (TP+Kick <7 Vida)", -- Updated name to reflect action
+    CurrentValue = false,
+    Flag = "antirevistar_lowhealth", -- Specific flag
+    Callback = function(Value)
+        antiRevistarEnabled = Value
+        if Value then
+            -- Make sure character and humanoid exist before starting
+            if Player.Character and Player.Character:FindFirstChild("Humanoid") then
+                 verificarVidaAntiRevistar() -- Call the setup function
             else
-                removeHighlight(character) 
+                -- Wait for character if it doesn't exist yet
+                local charConnection
+                charConnection = Player.CharacterAdded:Connect(function(char)
+                    if antiRevistarEnabled then -- Check if still enabled when character loads
+                        local humanoid = char:WaitForChild("Humanoid")
+                        verificarVidaAntiRevistar()
+                    end
+                    if charConnection then charConnection:Disconnect() end -- Disconnect self
+                end)
+                 Rayfield:Notify({Title = "Aguardando", Content = "Esperando personagem carregar para ativar Anti-Revistar.", Duration = 4})
+                 print("Anti-Revistar: Aguardando personagem.")
+            end
+        else
+            -- Disconnect the listener if the toggle is turned off
+            if antiRevistarConnection then
+                antiRevistarConnection:Disconnect()
+                antiRevistarConnection = nil
+                print("Anti-Revistar: Listener desconectado manualmente.")
             end
         end
+    end,
+})
+
+-- ============================
+-- ESP Section
+-- ============================
+MiniHubTab:CreateSection("ESP")
+local ESPAtivo = false
+local espConnections = {} -- Store connections and BillboardGuis
+
+local function removerESP(player)
+    if espConnections[player] then
+        if espConnections[player].gui and espConnections[player].gui.Parent then
+            espConnections[player].gui:Destroy()
+        end
+        if espConnections[player].diedConn then
+            espConnections[player].diedConn:Disconnect()
+        end
+         if espConnections[player].healthConn then
+            espConnections[player].healthConn:Disconnect()
+        end
+        espConnections[player] = nil
     end
-
-
-    players.PlayerAdded:Connect(function(player)
-        player.CharacterAdded:Connect(function(character)
-            if Value then
-                applyHighlight(character)
-            end
-        end)
-    end)
-
-    players.PlayerRemoving:Connect(function(player)
-        removeHighlight(player.Character) 
-    end)
+    -- Fallback check just in case
+    if player.Character and player.Character:FindFirstChild("Head") then
+        local head = player.Character.Head
+        local esp = head:FindFirstChild("ESP_MiniHub")
+        if esp then
+            esp:Destroy()
+        end
+    end
 end
 
+local function criarESP(player)
+    if not ESPAtivo or player == Player or espConnections[player] then return end -- Don't run if disabled, self, or already exists
 
-VisualTab:CreateToggle({
-   Name = "ESP Highlight",
-   CurrentValue = false,
-   Flag = "Toggle2", 
-   Callback = function(Value)
-        monitorHighlight(Value)
-   end,
-   -------------- espname---------
-})
--- Tabela para armazenar os ESPs dos jogadores
-local players = game:GetService("Players")
+    local character = player.Character
+    if not character then return end -- No character loaded
 
-local espInstances = {}
+    local head = character:FindFirstChild("Head")
+    local humanoid = character:FindFirstChildWhichIsA("Humanoid")
+    if not head or not humanoid then return end -- Missing essential parts
 
-local function createESPName(player)
-    local character = player.Character or player.CharacterAdded:Wait()
-    if character:FindFirstChild("ESPName") then return end 
-    local billboardGui = Instance.new("BillboardGui")
-    billboardGui.Name = "ESPName"
-    billboardGui.Adornee = character:WaitForChild("Head")
-    billboardGui.Size = UDim2.new(27, 0, 2, 0) 
-    billboardGui.StudsOffset = Vector3.new(0, 3, 0)
-    billboardGui.AlwaysOnTop = true
+    -- Clean up potential old ESP GUIs not tracked
+    local oldEsp = head:FindFirstChild("ESP_MiniHub")
+    if oldEsp then oldEsp:Destroy() end
 
-    local nameLabel = Instance.new("TextLabel", billboardGui)
-    nameLabel.Text = player.Name
-    nameLabel.Size = UDim2.new(1, 0, 1, 0)
+    local billboard = Instance.new("BillboardGui")
+    billboard.Name = "ESP_MiniHub" -- Specific name
+    billboard.Adornee = head
+    billboard.AlwaysOnTop = true
+    billboard.Size = UDim2.new(0, 150, 0, 40) -- Adjusted size
+    billboard.StudsOffset = Vector3.new(0, 2.5, 0) -- Slightly higher offset
+    billboard.Parent = head -- Parent early to track it
+
+    local frame = Instance.new("Frame")
+    frame.Size = UDim2.new(1, 0, 1, 0)
+    frame.BackgroundColor3 = Color3.fromRGB(0,0,0)
+    frame.BackgroundTransparency = 0.6
+    frame.BorderSizePixel = 1
+    frame.BorderColor3 = Color3.fromRGB(200,200,200)
+    frame.Parent = billboard
+
+    local nameLabel = Instance.new("TextLabel")
+    nameLabel.Size = UDim2.new(1, 0, 0.5, 0)
+    nameLabel.Position = UDim2.new(0, 0, 0, 0)
     nameLabel.BackgroundTransparency = 1
-    nameLabel.TextColor3 = Color3.new(1, 1, 1) 
-    nameLabel.TextStrokeTransparency = 0.2 
-    nameLabel.TextStrokeColor3 = Color3.new(0, 0, 0) 
-    nameLabel.Font = Enum.Font.SourceSansBold
-    nameLabel.TextSize = 27 
-    nameLabel.TextScaled = false
+    nameLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+    nameLabel.TextStrokeTransparency = 0.4
+    nameLabel.Font = Enum.Font.SourceSansSemibold
+    nameLabel.TextScaled = true
+    nameLabel.Text = player.Name
+    nameLabel.Parent = frame
 
-    billboardGui.Parent = character
-    espInstances[player] = billboardGui 
-end
+    local healthLabel = Instance.new("TextLabel")
+    healthLabel.Size = UDim2.new(1, 0, 0.5, 0)
+    healthLabel.Position = UDim2.new(0, 0, 0.5, 0)
+    healthLabel.BackgroundTransparency = 1
+    healthLabel.TextColor3 = Color3.fromRGB(0, 255, 0) -- Green for health
+    healthLabel.TextStrokeTransparency = 0.5
+    healthLabel.Font = Enum.Font.SourceSans
+    healthLabel.TextScaled = true
+    healthLabel.Text = "Vida: " .. math.floor(humanoid.Health)
+    healthLabel.Parent = frame
 
-
-local function removeESPName(player)
-    local esp = espInstances[player]
-    if esp then
-        esp:Destroy()
-        espInstances[player] = nil 
-    end
-end
-
-local function monitorESP(Value)
-    for _, player in ipairs(players:GetPlayers()) do
-        if player ~= players.LocalPlayer then
-            local character = player.Character or player.CharacterAdded:Wait()
-            if Value then
-                createESPName(player)
-            else
-                removeESPName(player) 
-            end
+    local function atualizarVida()
+        if humanoid and humanoid.Health > 0 then
+            local health = math.floor(humanoid.Health)
+            healthLabel.Text = "Vida: " .. health
+            -- Change color based on health percentage
+            local healthPercent = health / humanoid.MaxHealth
+            healthLabel.TextColor3 = Color3.fromHSV(0.33 * healthPercent, 1, 1) -- Green to Red gradient
+        else
+            -- If humanoid is dead or gone, trigger removal
+             removerESP(player)
         end
     end
 
-    
-    players.PlayerAdded:Connect(function(player)
-        player.CharacterAdded:Connect(function(character)
-            if Value then
-                createESPName(player)
-            end
-        end)
+    local healthConn = humanoid.HealthChanged:Connect(atualizarVida)
+    local diedConn = humanoid.Died:Connect(function()
+        removerESP(player)
     end)
 
-    
-    players.PlayerRemoving:Connect(function(player)
-        removeESPName(player) 
-    end)
+    -- Store references for cleanup
+    espConnections[player] = {
+        gui = billboard,
+        healthConn = healthConn,
+        diedConn = diedConn
+    }
+end
+
+local function aplicarESPGlobal(ativado)
+    ESPAtivo = ativado
+    if ESPAtivo then
+        print("ESP Ativado")
+        for _, p in pairs(Players:GetPlayers()) do
+            if p ~= Player then
+                if p.Character then
+                    criarESP(p)
+                end
+                -- Connect CharacterAdded for players already in game
+                p.CharacterAdded:Connect(function(char)
+                    task.wait(0.5) -- Wait for parts
+                    criarESP(p)
+                end)
+            end
+        end
+        -- Connect PlayerAdded for future players
+         Players.PlayerAdded:Connect(function(newPlayer)
+            newPlayer.CharacterAdded:Connect(function(char)
+                 task.wait(0.5)
+                 criarESP(newPlayer)
+            end)
+        end)
+    else
+        print("ESP Desativado")
+        for p, data in pairs(espConnections) do
+            removerESP(p) -- Use the cleanup function
+        end
+        espConnections = {} -- Clear the table
+        -- Also remove any stray ESPs just in case
+        for _, p in pairs(Players:GetPlayers()) do
+             if p.Character and p.Character:FindFirstChild("Head") then
+                  local oldEsp = p.Character.Head:FindFirstChild("ESP_MiniHub")
+                  if oldEsp then oldEsp:Destroy() end
+             end
+        end
+    end
 end
 
 
-VisualTab:CreateToggle({
-   Name = "ESP Name",
-   CurrentValue = false,
-   Flag = "Toggle1", 
-   Callback = function(Value)
-        
-        monitorESP(Value)
-   end,
+MiniHubTab:CreateToggle({
+    Name = "ESP nome/vida",
+    CurrentValue = false,
+    Flag = "esp_toggle",
+    Callback = function(Value)
+        aplicarESPGlobal(Value)
+    end,
+})
+
+-- ============================
+-- Auto Revistar Section
+-- ============================
+MiniHubTab:CreateSection("Auto Revistar")
+local autoRevistarAtivo = false
+local autoRevistarCoroutine = nil
+
+MiniHubTab:CreateToggle({
+    Name = "Ativar Auto Revistar",
+    CurrentValue = false,
+    Flag = "autorsv_toggle",
+    Callback = function(Value)
+        autoRevistarAtivo = Value
+        if autoRevistarAtivo then
+            if autoRevistarCoroutine then return end -- Prevent multiple loops
+            print("Auto Revistar Ativado")
+            autoRevistarCoroutine = task.spawn(function()
+                while autoRevistarAtivo do
+                    sendRevistarCommand()
+                    task.wait(2.1) -- Slightly more than 2 seconds to avoid potential remote spam limits
+                    if not autoRevistarAtivo then break end -- Check again after wait
+                end
+                print("Auto Revistar Loop Terminado")
+            end)
+        else
+            -- Stop the coroutine (it will exit on the next loop check)
+             print("Auto Revistar Desativado")
+            autoRevistarCoroutine = nil -- Allows a new one to be created if re-enabled
+        end
+    end,
 })
 
 
-local TeleportTab = Window:CreateTab("Teleports")
-local Paragraph = TeleportTab:CreateParagraph({Title = "GAB MENU", Content = "feito por GAB"})
+-- ============================
+-- Ver Itens UI Section
+-- ============================
+MiniHubTab:CreateSection("Itens dos Jogadores")
+local verItensUIAtivo = false
+local verItensConnections = {} -- Store player-specific data {gui, connections = {}}
 
+local function removerVerItensUI(player)
+    if verItensConnections[player] then
+        if verItensConnections[player].gui and verItensConnections[player].gui.Parent then
+             verItensConnections[player].gui:Destroy()
+        end
+        -- Disconnect all listeners for that player
+        for _, conn in pairs(verItensConnections[player].connections) do
+             pcall(function() conn:Disconnect() end)
+        end
+        verItensConnections[player] = nil
+    end
+    -- Fallback check
+     if player.Character and player.Character:FindFirstChild("Head") then
+         local ui = player.Character.Head:FindFirstChild("ItemUI_MiniHub")
+         if ui then ui:Destroy() end
+     end
+end
 
-local Section = TeleportTab:CreateSection("TELEPORTS")
-local function addTeleportButton(name, cframe)
-    TeleportTab:CreateButton({
-        Name = name,
-        Callback = function()
-            local player = game.Players.LocalPlayer
-            if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
-                player.Character:MoveTo(cframe.Position + Vector3.new(0, 3, 0))
+local function adicionarVerItensUI(player)
+    if not verItensUIAtivo or player == Player or verItensConnections[player] then return end
+
+    local character = player.Character
+    if not character then return end
+
+    local head = character:FindFirstChild("Head")
+    if not head then return end
+
+    -- Clean up potential old UI
+     local oldUi = head:FindFirstChild("ItemUI_MiniHub")
+     if oldUi then oldUi:Destroy() end
+
+    local gui = Instance.new("BillboardGui")
+    gui.Name = "ItemUI_MiniHub"
+    gui.Adornee = head
+    gui.Size = UDim2.new(0, 200, 0, 60) -- Wider for more items
+    gui.StudsOffset = Vector3.new(0, 3.5, 0) -- Position above ESP
+    gui.AlwaysOnTop = true
+    gui.Parent = head
+
+    local frame = Instance.new("Frame")
+    frame.Size = UDim2.new(1, 0, 1, 0)
+    frame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+    frame.BackgroundTransparency = 0.7
+    frame.BorderSizePixel = 1
+    frame.BorderColor3 = Color3.fromRGB(150, 150, 255) -- Light blue border
+    frame.Parent = gui
+
+    local nameLabel = Instance.new("TextLabel")
+    nameLabel.Size = UDim2.new(1, 0, 0.3, 0) -- Smaller name area
+    nameLabel.Position = UDim2.new(0, 0, 0, 0)
+    nameLabel.BackgroundTransparency = 1
+    nameLabel.TextColor3 = Color3.new(1, 1, 1)
+    nameLabel.TextStrokeTransparency = 0.5
+    nameLabel.Font = Enum.Font.SourceSansBold
+    nameLabel.TextScaled = true
+    nameLabel.Text = player.Name
+    nameLabel.Parent = frame
+
+    local itensLabel = Instance.new("TextLabel")
+    itensLabel.Size = UDim2.new(1, 0, 0.7, 0) -- Larger item area
+    itensLabel.Position = UDim2.new(0, 0, 0.3, 0)
+    itensLabel.BackgroundTransparency = 1
+    itensLabel.TextColor3 = Color3.new(1, 1, 1)
+    itensLabel.TextStrokeTransparency = 0.6
+    itensLabel.Font = Enum.Font.SourceSans -- Regular font
+    itensLabel.TextScaled = true -- Scale text to fit
+    itensLabel.TextWrapped = true
+    itensLabel.TextXAlignment = Enum.TextXAlignment.Left
+    itensLabel.TextYAlignment = Enum.TextYAlignment.Top
+    itensLabel.Text = "Carregando..."
+    itensLabel.Parent = frame
+
+    local playerConnections = {}
+
+    local function updateItemList()
+         if not player or not player:IsDescendantOf(Players) then -- Check if player still exists
+             removerVerItensUI(player)
+             return
+         end
+         local list = {}
+         -- Check Backpack
+         local backpack = player:FindFirstChild("Backpack")
+         if backpack then
+             for _, item in ipairs(backpack:GetChildren()) do
+                 if item:IsA("Tool") then -- Only list tools
+                    table.insert(list, item.Name)
+                 end
+             end
+         end
+         -- Check Character (equipped items)
+         if player.Character then
+             for _, item in ipairs(player.Character:GetChildren()) do
+                 if item:IsA("Tool") then
+                     table.insert(list, item.Name)
+                 end
+             end
+         end
+         local itemText = table.concat(list, ", ")
+         if itemText == "" then itemText = "Nenhum item" end
+         itensLabel.Text = itemText
+    end
+
+    -- Initial update
+    updateItemList()
+
+    -- Connect listeners
+    local backpack = player:WaitForChild("Backpack")
+    table.insert(playerConnections, backpack.ChildAdded:Connect(updateItemList))
+    table.insert(playerConnections, backpack.ChildRemoved:Connect(updateItemList))
+    -- Need to handle character changes too
+    table.insert(playerConnections, player.CharacterAdded:Connect(function(char)
+        task.wait(0.2) -- Wait for items to potentially load into new char
+        updateItemList() -- Update list
+        -- Connect to new character's children changes
+         table.insert(playerConnections, char.ChildAdded:Connect(function(child) if child:IsA("Tool") then updateItemList() end end))
+         table.insert(playerConnections, char.ChildRemoved:Connect(function(child) if child:IsA("Tool") then updateItemList() end end))
+    end))
+    if player.Character then -- Connect to current character if exists
+        table.insert(playerConnections, player.Character.ChildAdded:Connect(function(child) if child:IsA("Tool") then updateItemList() end end))
+        table.insert(playerConnections, player.Character.ChildRemoved:Connect(function(child) if child:IsA("Tool") then updateItemList() end end))
+    end
+
+    -- Store references
+    verItensConnections[player] = {
+        gui = gui,
+        connections = playerConnections
+    }
+end
+
+local function aplicarVerItensGlobal(ativado)
+    verItensUIAtivo = ativado
+    if verItensUIAtivo then
+        print("Ver Itens UI Ativado")
+        for _, p in pairs(Players:GetPlayers()) do
+            if p ~= Player then
+                if p.Character then
+                    adicionarVerItensUI(p)
+                end
+                -- Connect CharacterAdded for players already in game
+                 p.CharacterAdded:Connect(function(char)
+                    task.wait(0.5) -- Wait for parts
+                    adicionarVerItensUI(p)
+                end)
             end
-        end,
+        end
+        -- Connect PlayerAdded for future players
+         Players.PlayerAdded:Connect(function(newPlayer)
+            newPlayer.CharacterAdded:Connect(function(char)
+                 task.wait(0.5)
+                 adicionarVerItensUI(newPlayer)
+            end)
+        end)
+    else
+         print("Ver Itens UI Desativado")
+         for p, data in pairs(verItensConnections) do
+             removerVerItensUI(p) -- Use the cleanup function
+         end
+         verItensConnections = {} -- Clear the table
+         -- Also remove any stray UIs just in case
+         for _, p in pairs(Players:GetPlayers()) do
+             if p.Character and p.Character:FindFirstChild("Head") then
+                  local oldUi = p.Character.Head:FindFirstChild("ItemUI_MiniHub")
+                  if oldUi then oldUi:Destroy() end
+             end
+         end
+    end
+end
+
+
+MiniHubTab:CreateToggle({
+    Name = "Ver itens UI",
+    CurrentValue = false,
+    Flag = "veritensui_toggle",
+    Callback = function(Value)
+        aplicarVerItensGlobal(Value)
+    end,
+})
+
+
+-- ============================
+-- Teleport Tab
+-- ============================
+TeleportTab:CreateParagraph({Title = "Mini Hub", Content = "por th"})
+TeleportTab:CreateSection("TELEPORTS")
+
+local function addTeleportButton(nome, position) -- Takes Vector3 position now
+    TeleportTab:CreateButton({
+        Name = nome,
+        Callback = function()
+            local char = Player.Character
+            local hrp = char and char:FindFirstChild("HumanoidRootPart")
+            if hrp then
+                 hrp.CFrame = CFrame.new(position) + Vector3.new(0, 3, 0) -- Teleport slightly above ground
+                 Rayfield:Notify({Title = "Teleporte", Content = "Movido para " .. nome, Duration = 3})
+            else
+                 Rayfield:Notify({Title = "Erro", Content = "Personagem não encontrado para teleportar.", Duration = 4})
+            end
+        end
     })
 end
--- Adicionando os botÃƒÂµes de teletransporte para locais fixos
-addTeleportButton("Teleport PraÃƒÂ§a", CFrame.new(-291.579559, 3.26299787, 342.192535))
-addTeleportButton("Teleport GÃƒÂ¡s", CFrame.new(-469.959015, 3.25349784, -54.3936005))
-addTeleportButton("Teleport HP", CFrame.new(-543.439941, 3.26299858, 645.16864))
-addTeleportButton("Teleport Tabacaria", CFrame.new(-83.1141129, 13.1430578, 74.7073364))
-addTeleportButton("Teleport Garagem", CFrame.new(-466.870148, 7.64567232, 350.242737))
-addTeleportButton("Teleport Concessionaria", CFrame.new(-91.3902893, 8.07136822, 520.355347))
-addTeleportButton("Teleport Gari", CFrame.new(-518.672852, 3.16749811, -1.16962147, 0, 0, -1, 0, 1, 0, 1, 0, 0))
-addTeleportButton("Teleport Imobiliaria", CFrame.new(-284.904785, 8.26088619, -72.2896194, 0, 0, -1, 0, 1, 0, 1, 0, 0))
-addTeleportButton("Teleport PM", CFrame.new(-980.181458, 2.27553082, 467.080536, 1, 0, 0, 0, 1, 0, 0, 0, 1))
-addTeleportButton("Teleport PRF", CFrame.new(6662.24512, 36.6637421, 5047.83838, 0.707134247, 0, 0.707079291, 0, 1, 0, -0.707079291, 0, 0.707134247))
-addTeleportButton("Teleport MineraÃƒÂ§ÃƒÂ£o", CFrame.new(201.932144, 2.76136589, 145.50531, 0, 0, 1, 0, 1, -0, -1, 0, 0))
-addTeleportButton("Teleport MecÃƒÂ¢nica", CFrame.new(-180.608261, 3.29813337, -532.4151, 0.422592998, -0, -0.906319618, 0, 1, -0, 0.906319618, 0, 0.422592998))
-addTeleportButton("Teleport Fazenda", CFrame.new(817.243225, 3.26249814, -87.316864, 0, 0, 1, 0, 1, 0, -1, 0, 0))
-addTeleportButton("Teleport Prefeitura", CFrame.new(-284.388458, 15.1148872, 88.0397873, 0, 0, -1, 0, 1, 0, 1, 0, 0))
-addTeleportButton("Teleport Banco", CFrame.new(-27.2709007, 11.5685892, 418.200653, 1, 0, 0, 0, 1, 0, 0, 0, 1))
-addTeleportButton("Teleport Ilegal", CFrame.new(12037.2705, 27.5305443, 12794.0635, 0.965929627, -0, -0.258804798, 0, 1, -0, 0.258804798, 0, 0.965929627))
-addTeleportButton("Teleport predio 1", CFrame.new(-1595.23328, 204.074341, 555.895386, 0.939687431, -0.34203434, 1.81794167e-06, 1.81794167e-06, 1.02519989e-05, 1, -0.34203434, -0.93968749, 1.02519989e-05))
-addTeleportButton("Teleport Devs Mini City", CFrame.new(2555.44263, 303.167755, -1004.13763, -0.422592998, 0, 0.906319618, 0, 1, 0, -0.906319618, 0, -0.422592998))
 
-local rev = Window:CreateTab("Revistar")
-local Paragraph = rev:CreateParagraph({Title = "MINI AWAYS", Content = "feito por amir & ninja"})
-local Section = rev:CreateSection("SE QUISER SIM")
-local Button = rev:CreateButton({
-   Name = "AUTO ROUBAR",
-   Callback = function()
-   -- FunÃƒÂ§ÃƒÂ£o para deletar todas as NotifyGui
-local function deletarNotifyGui()
-    local playerGui = game.Players.LocalPlayer:WaitForChild("PlayerGui")
-    for _, gui in ipairs(playerGui:GetChildren()) do
-        if gui.Name == "NotifyGui" and gui:IsA("ScreenGui") then
-            gui:Destroy() -- Deleta a NotifyGui
+-- Locais fixos (using Vector3 for MoveTo/CFrame)
+addTeleportButton("Praça", Vector3.new(-291.579559, 3.26299787, 342.192535))
+addTeleportButton("Gás", Vector3.new(-469.959015, 3.25349784, -54.3936005))
+addTeleportButton("HP", Vector3.new(-543.439941, 3.26299858, 645.16864))
+addTeleportButton("Tabacaria", Vector3.new(-83.1141129, 13.1430578, 74.7073364))
+addTeleportButton("Garagem", Vector3.new(-466.870148, 7.64567232, 350.242737))
+addTeleportButton("Concessionária", Vector3.new(-91.3902893, 8.07136822, 520.355347))
+addTeleportButton("Gari", Vector3.new(-518.672852, 3.16749811, -1.16962147))
+addTeleportButton("Imobiliária", Vector3.new(-284.904785, 8.26088619, -72.2896194))
+addTeleportButton("PM", Vector3.new(-980.181458, 2.27553082, 467.080536))
+addTeleportButton("PRF", Vector3.new(6662.24512, 36.6637421, 5047.83838))
+addTeleportButton("Mineração", Vector3.new(201.932144, 2.76136589, 145.50531))
+addTeleportButton("Mecânica", Vector3.new(-180.608261, 3.29813337, -532.4151))
+addTeleportButton("Fazenda", Vector3.new(817.243225, 3.26249814, -87.316864))
+addTeleportButton("Prefeitura", Vector3.new(-284.388458, 15.1148872, 88.0397873))
+addTeleportButton("Banco", Vector3.new(-27.2709007, 11.5685892, 418.200653))
+addTeleportButton("Ilegal", Vector3.new(12037.2705, 27.5305443, 12794.0635))
+addTeleportButton("Prédio 1", Vector3.new(-1595.23328, 204.074341, 555.895386))
+
+
+-- ============================
+-- Config Tab
+-- ============================
+local ConfigSection = ConfigTab:CreateSection("Ajustes e Preferências")
+
+-- FPS Boost / Performance Mode
+ConfigTab:CreateButton({
+    Name = "Ativar Modo Desempenho (FPS Boost)",
+    Callback = function()
+        local decalsEnabled = false -- Option to keep decals if desired
+        local textureQuality = Enum.TextureQuality.Lowest
+        local materialQuality = Enum.MaterialQuality.Low
+
+        -- Basic Graphics Settings
+        settings().Rendering.QualityLevel = Enum.QualityLevel.Level01 -- Set general quality low first
+        UserSettings():GetService("UserGameSettings").SavedQualityLevel = Enum.QualityLevel.Level01
+
+        -- Fine-tune Lighting
+        Lighting.Brightness = 2
+        Lighting.GlobalShadows = false
+        Lighting.FogEnd = 100000
+        Lighting.FogStart = 99990 -- Minimal fog distance
+        pcall(function() Lighting.Technology = Enum.Technology.Compatibility end) -- Compatibility mode is fastest
+        pcall(function() Lighting.ShadowSoftness = 0 end)
+        pcall(function() Lighting.EnvironmentDiffuseScale = 0 end)
+        pcall(function() Lighting.EnvironmentSpecularScale = 0 end)
+        -- Turn off specific effects if they exist
+        for _, effect in ipairs(Lighting:GetChildren()) do
+             if effect:IsA("PostEffect") then effect.Enabled = false end
         end
-    end
-end
 
--- Lista de itens para pegar
-local itens = {"AK47", "Uzi", "Glock17", "Glock 17", "Parafal", "PARAFAL", "Faca", "IA2", "G3", "Tratamento", "FACA", "Xbox", "Hi Power", "Natalina", "C4", "AR-15", "AR15", "Escudo", "ESCUDO"}
-
--- Argumentos para a requisiÃƒÂ§ÃƒÂ£o
-local args = {
-    [1] = "mudaInv",
-    [2] = "2",
-    [4] = "1"
-}
-
--- Loop principal
-while true do
-    -- Deletar todas as NotifyGui antes de pegar os itens
-    deletarNotifyGui()
-
-    -- Pegar itens
-    for i, item in ipairs(itens) do
-        if i <= 16 then  -- SÃƒÂ³ tenta alocar atÃƒÂ© 16 slots
-            args[3] = item  -- Atualiza o item para o valor da vez
-            args[2] = tostring(i)  -- Atribui o slot dinamicamente (1, 2, 3, ..., 16)
-
-            -- Usar task.spawn() para execuÃƒÂ§ÃƒÂ£o sem delay
-            task.spawn(function()
-                -- Envia a requisiÃƒÂ§ÃƒÂ£o para o servidor
-                game:GetService("ReplicatedStorage"):WaitForChild("Modules"):WaitForChild("InvRemotes"):WaitForChild("InvRequest"):InvokeServer(unpack(args))
-            end)
+        -- Iterate through workspace parts and effects
+        for _, v in pairs(Workspace:GetDescendants()) do
+            if v:IsA("BasePart") then
+                v.Material = Enum.Material.Plastic -- Force simplest material
+                v.Reflectance = 0
+                v.CastShadow = false
+                 local mats = v:GetChildren()
+                 for i = 1, #mats do -- Disable Material Variants
+                      if mats[i]:IsA("MaterialVariant") then mats[i].Parent = nil end
+                 end
+            elseif v:IsA("Decal") or (v:IsA("Texture") and not v.Parent:IsA("GuiBase")) then -- Textures on parts
+                 v.Transparency = 1 -- Hide decals/textures
+            elseif v:IsA("ParticleEmitter") or v:IsA("Trail") or v:IsA("Smoke") or v:IsA("Fire") or v:IsA("Beam") then
+                v.Enabled = false -- Disable effects
+            elseif v:IsA("MeshPart") then -- Simplify meshes
+                v.RenderFidelity = Enum.RenderFidelity.Performance
+                v.TextureID = "" -- Remove texture
+                 v.CastShadow = false
+            elseif v:IsA("Explosion") then
+                 v.BlastPressure = 0
+                 v.BlastRadius = 0
+            elseif v:IsA("ProximityPrompt") then
+                v.Enabled = false -- Disable prompts if desired (might break some gameplay)
+            end
         end
-    end
 
-    wait(0)  -- Espera um frame para evitar lag
-end
-   end,
-})
-local Section = rev:CreateSection("PC")
-local ww = rev:CreateToggle({
-   Name = "mandar revistar (TECLA V)",
-   CurrentValue = false,
-   Flag = "rvst",
-   Callback = function(Value)
-       getgenv().Enabled = Value
-   end,
-})
-local Section = rev:CreateSection("MOBILE")
-local mob = rev:CreateButton({
-   Name = "Auto revistar",
-   Callback = function()
-   local TextChatService = game:GetService("TextChatService")
+        -- Terrain Settings
+        if Workspace:FindFirstChildOfClass("Terrain") then
+             Workspace.Terrain.WaterWaveSize = 0
+             Workspace.Terrain.WaterWaveSpeed = 0
+             Workspace.Terrain.WaterReflectance = 0
+             Workspace.Terrain.WaterTransparency = 1 -- Make water mostly transparent
+             Workspace.Terrain.Decoration = false -- Disable grass/decorations
+             Workspace.Terrain.MaterialColors = BrickColor.random().Color -- Optional: Single color for terrain
+        end
 
--- FunÃƒÂ§ÃƒÂ£o para enviar a mensagem /revistar
-local function sendRevistarMessage()
-    local channel = TextChatService:WaitForChild("TextChannels"):WaitForChild("RBXGeneral")
-    channel:SendAsync("/rev
+         Rayfield:Notify({Title = "Desempenho", Content = "Modo de desempenho ativado.", Duration = 5})
+         print("Modo Desempenho Ativado.")
+    end,
+})
+
+-- Sound Toggle
+local soundMuted = false
+ConfigTab:CreateToggle({
+    Name = "Mutar Som do Jogo",
+    CurrentValue = soundMuted, -- Start based on variable
+    Callback = function(Value)
+        soundMuted = Value
+        SoundService.RespectFilteringEnabled = true -- Needed for volume control on FE games
+        local globalVolume = soundMuted and 0 or 0.5 -- Set to 0 if muted, 0.5 (or 1) if not
+        SoundService.Volume = globalVolume -- Use global volume control first
+
+        -- Fallback for sounds that might ignore global volume
+        for _, s in pairs(SoundService:GetDescendants()) do
+            if s:IsA("Sound") then
+                s.Volume = globalVolume -- Set individual volumes too
+            end
+        end
+         Rayfield:Notify({Title = "Som", Content = "Som do jogo " .. (soundMuted and "mutado." or "desmutado."), Duration = 3})
+    end,
+})
+
+-- Reset Character
+ConfigTab:CreateButton({
+    Name = "Resetar Personagem",
+    Callback = function()
+        local char = Player.Character
+        if char and char:FindFirstChild("Humanoid") then
+             char.Humanoid.Health = 0 -- Standard way to reset
+             Rayfield:Notify({Title = "Reset", Content = "Personagem resetado.", Duration = 3})
+        else
+             Rayfield:Notify({Title = "Erro", Content = "Não foi possível resetar o personagem.", Duration = 4})
+        end
+    end,
+})
+
+-- Disable Particles Only (Less aggressive than full FPS boost)
+ConfigTab:CreateButton({
+    Name = "Desligar Apenas Partículas/Efeitos",
+    Callback = function()
+         for _, v in pairs(Workspace:GetDescendants()) do
+             if v:IsA("ParticleEmitter") or v:IsA("Trail") or v:IsA("Smoke") or v:IsA("Fire") or v:IsA("Beam") then
+                v.Enabled = false
+             elseif v:IsA("Explosion") then
+                 v.BlastPressure = 0
+                 v.BlastRadius = 0
+             end
+        end
+        Rayfield:Notify({Title = "Efeitos", Content = "Partículas e efeitos desativados.", Duration = 4})
+        print("Partículas/Efeitos desativados.")
+    end,
+})
+
+-- Graphics Quality Presets
+ConfigTab:CreateButton({
+    Name = "Gráficos: Baixo",
+    Callback = function()
+        settings().Rendering.QualityLevel = Enum.QualityLevel.Level01
+        UserSettings():GetService("UserGameSettings").SavedQualityLevel = Enum.QualityLevel.Level01
+        Rayfield:Notify({Title = "Gráficos", Content = "Qualidade definida como Baixa.", Duration = 3})
+    end,
+})
+
+ConfigTab:CreateButton({
+    Name = "Gráficos: Médio",
+    Callback = function()
+         -- Roblox typically maps "Medium" to levels around 4-7 depending on device
+         settings().Rendering.QualityLevel = Enum.QualityLevel.Level05
+         UserSettings():GetService("UserGameSettings").SavedQualityLevel = Enum.QualityLevel.Level05
+         Rayfield:Notify({Title = "Gráficos", Content = "Qualidade definida como Média.", Duration = 3})
+    end,
+})
+
+ConfigTab:CreateButton({
+    Name = "Gráficos: Alto",
+    Callback = function()
+        settings().Rendering.QualityLevel = Enum.QualityLevel.Level10 -- Example level for High
+        UserSettings():GetService("UserGameSettings").SavedQualityLevel = Enum.QualityLevel.Level10
+        Rayfield:Notify({Title = "Gráficos", Content = "Qualidade definida como Alta.", Duration = 3})
+    end,
+})
+
+
+print("Mini Hub UI Carregada!")
+Rayfield:Notify({Title = "Mini Hub", Content = "Script carregado com sucesso!", Duration = 5})
